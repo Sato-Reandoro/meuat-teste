@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+
+# Docker
+docker-compose.override.yml
+
+# Data files (don't commit shapefile data)
+seed/data/*.shp
+seed/data/*.shx
+seed/data/*.dbf
+seed/data/*.prj
+seed/data/*.cpg
+seed/data/*.sbn
+seed/data/*.sbx
+seed/data/*.fix
+seed/data/*.xml
+!seed/data/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
