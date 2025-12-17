@@ -1,6 +1,6 @@
 import logging
-import pytest
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
