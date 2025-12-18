@@ -1,103 +1,86 @@
-# MeuAT Fazendas API 🌾
+# Desafio Técnico: Desenvolvedor Pleno | MeuAT
 
-API REST para busca de fazendas por localização geográfica usando Python, FastAPI e PostgreSQL com PostGIS.
+Bem-vindo à solução do desafio técnico para a vaga de Desenvolvedor Pleno no MeuAT. Este projeto implementa uma API REST geoespacial robusta para consultar fazendas em São Paulo usando Python, FastAPI e PostgreSQL + PostGIS.
 
-## 🚀 Início Rápido
+---
 
-### Pré-requisitos
-- Docker
-- Docker Compose
-- Arquivos shapefile das fazendas (`.shp`, `.shx`, `.dbf`, `.prj`)
+## 📋 Funcionalidades Implementadas
 
-### Como Executar
+### Obrigatórios ✅
+- [x] **Stack**: Python 3.10+, FastAPI, PostgreSQL + PostGIS, Docker.
+- [x] **Busca por ID**: Endpoint `GET /fazendas/{id}`.
+- [x] **Busca por Ponto**: Endpoint `POST /fazendas/busca-ponto` (ST_Contains).
+- [x] **Busca por Raio**: Endpoint `POST /fazendas/busca-raio` (ST_DWithin).
+- [x] **Infraestrutura**: `docker-compose up` sobe tudo com seed automático.
+- [x] **Documentação**: README claro e instruções de setup.
 
-1. **Clone o repositório**
-```bash
-git clone <repository-url>
-cd meuat
+### Bônus e Diferenciais ⭐️
+- [x] **Testes Automatizados**: Suíte completa com `pytest` (Unitários + Integração).
+- [x] **Smoke Tests & CI**: Pipeline de verificação básica para GitHub Actions.
+- [x] **Docs Interativa**: Swagger UI customizado com exemplos de payload.
+- [x] **Paginação**: Implementada em todas as listagens para performance.
+- [x] **Health Check**: Endpoint `/health` para monitoramento.
+- [x] **Filtros Avançados**: Busca por nome (Município + Código) e área.
+- [x] **Logs Estruturados**: Logging configurado para observabilidade.
+- [x] **Índices Espaciais**: Uso de índices GIST para otimização de queries.
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### 1. Pré-requisitos
+- Docker e Docker Compose instalados.
+- Git.
+
+### 2. Download dos Dados (Importante ⚠️)
+O sistema possui um seed automático, mas **você precisa fornecer os arquivos shapefile**.
+
+1. **Baixe os dados** (Arquivo ZIP) aqui:
+   👉 [**Download Google Drive**](https://drive.google.com/file/d/15ghpnwzdDhFqelouqvQwXlbzovtPhlFe/view?usp=sharing)
+
+2. **Extraia** os arquivos (`.shp`, `.shx`, `.dbf`, `.prj`) para a pasta `seed/data/` na raiz do projeto.
+
+A estrutura deve ficar assim:
+```
+meuat-teste/
+├── seed/
+│   └── data/             <-- COLOQUE OS ARQUIVOS AQUI
+│       ├── AREA_IMOVEL_1.shp
+│       ├── AREA_IMOVEL_1.shx
+│       ...
+├── app/
+├── docker-compose.yml
+└── ...
 ```
 
-2. **Adicione os dados shapefile**
-
-Coloque os arquivos shapefile na pasta `seed/data/`:
-```
-seed/data/
-├── AREA_IMOVEL_1.shp
-├── AREA_IMOVEL_1.shx
-├── AREA_IMOVEL_1.dbf
-└── AREA_IMOVEL_1.prj
-```
-
-3. **Configure as variáveis de ambiente**
-
-Crie um arquivo `.env` na raiz do projeto (copie de `.env.example`):
+### 3. Configuração
+Crie o arquivo de variáveis de ambiente:
 ```bash
 cp .env.example .env
+# Windows: copy .env.example .env
 ```
+> **Dica**: Se a porta `5432` estiver em uso, altere `POSTGRES_PORT` no `.env` (ex: 5434).
 
-**Importante**: Se você já tem PostgreSQL instalado na porta 5432, ajuste `DB_HOST_PORT` no `.env` para outra porta (ex: 5434).
-
-4. **Inicie a aplicação**
+### 4. Rodar
 ```bash
 docker-compose up --build
 ```
+A API estará disponível em **http://localhost:8000** assim que subir.
 
-Pronto! 🎉 A API estará rodando em `http://localhost:8000`
-
-Os dados serão carregados automaticamente no banco de dados.
+---
 
 ## 📚 Documentação da API
 
-Acesse a documentação interativa em:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+Acesse a documentação interativa para testar os endpoints:
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
-## 🔌 Endpoints
+### Exemplos de Uso
 
-### Health Check
-```http
-GET /health
-```
-Verifica o status da API e conexão com o banco de dados.
+#### 1. Buscar Fazendas por Raio
+Encontra fazendas numraio de X km a partir de um ponto.
 
-### Buscar Fazenda por ID
-```http
-GET /fazendas/{id}
-```
-
-**Resposta:**
-```json
-{
-  "id": 1,
-  "name": "Fazenda Exemplo",
-  "area_hectares": 150.5,
-  "municipality": "Ribeirão Preto",
-  "state": "SP",
-  "geometry": { ... }
-}
-```
-
-### Buscar Fazendas por Ponto
-```http
-POST /fazendas/busca-ponto
-```
-
-**Body:**
-```json
-{
-  "latitude": -23.5505,
-  "longitude": -46.6333
-}
-```
-
-Retorna fazendas que contêm o ponto especificado (usando `ST_Contains`).
-
-### Buscar Fazendas por Raio
-```http
-POST /fazendas/busca-raio
-```
-
-**Body:**
+**POST** `/fazendas/busca-raio`
 ```json
 {
   "latitude": -23.5505,
@@ -106,151 +89,70 @@ POST /fazendas/busca-raio
 }
 ```
 
-**Query Parameters (opcionais):**
-- `page`: Número da página (padrão: 1)
-- `page_size`: Resultados por página (padrão: 50, máximo: 100)
-- `name`: Filtrar por nome da fazenda
-- `min_area`: Área mínima em hectares
-- `max_area`: Área máxima em hectares
+#### 2. Buscar Fazenda por Ponto
+Descobre em qual fazenda um ponto específico está localizado.
 
-Retorna fazendas dentro do raio especificado (usando `ST_DWithin`).
-
-## 🏗️ Arquitetura
-
+**POST** `/fazendas/busca-ponto`
+```json
+{
+  "latitude": -22.1234,
+  "longitude": -47.5678
+}
 ```
-meuat/
-├── app/                    # Aplicação FastAPI
-│   ├── api/               # Endpoints da API
-│   ├── core/              # Configurações e database
-│   ├── models/            # Modelos SQLAlchemy
-│   ├── schemas/           # Schemas Pydantic
-│   └── services/          # Lógica de negócio
-├── seed/                  # Sistema de seed
-│   ├── data/             # Dados shapefile
-│   └── load_shapefiles.py
-├── tests/                 # Testes automatizados
-└── docker-compose.yml     # Orquestração Docker
-```
-
-## 🧪 Testes
-
-### Executar testes localmente
-```bash
-pip install -r requirements.txt
-pytest tests/ -v --cov=app
-```
-
-### Executar testes no Docker
-```bash
-docker-compose run --rm api pytest tests/ -v
-```
-
-## 🔍 Recursos Implementados
-
-### Obrigatórios ✅
-- ✅ Python 3.11 + FastAPI
-- ✅ PostgreSQL com PostGIS
-- ✅ Docker + Docker Compose
-- ✅ Endpoint `GET /fazendas/{id}`
-- ✅ Endpoint `POST /fazendas/busca-ponto`
-- ✅ Endpoint `POST /fazendas/busca-raio`
-- ✅ Seed automático ao iniciar containers
-- ✅ README com instruções
-
-### Bônus Implementados 🌟
-- ✅ **Testes automatizados** - pytest com smoke tests
-- ✅ **Documentação Swagger** - customizada com exemplos
-- ✅ **Paginação** - em todos os endpoints de busca
-- ✅ **Health check** - `GET /health`
-- ✅ **CI básico** - GitHub Actions com lint e testes
-- ✅ **Filtros adicionais** - nome, área mínima/máxima
-- ✅ **Índices espaciais** - GIST index no campo geometry
-- ✅ **Logs estruturados** - JSON structured logging
-
-## 🛠️ Desenvolvimento
-
-### Configuração do ambiente local
-
-```bash
-# Criar ambiente virtual
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate  # Windows
-
-# Instalar dependências
-pip install -r requirements.txt
-```
-
-### Lint e formatação
-```bash
-# Verificar código
-ruff check app/ tests/
-
-# Formatar código
-ruff format app/ tests/
-```
-
-### Variáveis de ambiente
-
-Copie `.env.example` para `.env` e ajuste conforme necessário:
-
-```bash
-cp .env.example .env
-```
-
-## 📊 Tecnologias Utilizadas
-
-- **FastAPI** - Framework web moderno e rápido
-- **PostgreSQL + PostGIS** - Banco de dados com extensão geoespacial
-- **SQLAlchemy** - ORM Python
-- **GeoAlchemy2** - Extensão do SQLAlchemy para tipos geoespaciais
-- **Pydantic** - Validação de dados
-- **Docker** - Containerização
-- **Pytest** - Framework de testes
-- **Ruff** - Linter e formatter Python
-- **GitHub Actions** - CI/CD
-
-## 🗺️ PostGIS - Operações Espaciais
-
-A API utiliza as seguintes funções PostGIS:
-
-- **ST_Contains**: Verifica se um ponto está dentro de um polígono
-- **ST_DWithin**: Encontra geometrias dentro de uma distância específica
-- **ST_AsGeoJSON**: Converte geometrias para formato GeoJSON
-- **ST_Transform**: Transforma coordenadas entre sistemas de referência
-
-## 📝 Notas Técnicas
-
-- **SRID 4326**: Sistema de coordenadas WGS84 (GPS)
-- **Índices GIST**: Otimizam queries espaciais
-- **Paginação**: Previne sobrecarga com grandes datasets
-- **Logs estruturados**: Facilitam monitoramento em produção
-
-## 🐛 Troubleshooting
-
-### Seed não carrega os dados
-Verifique se os arquivos shapefile estão na pasta `seed/data/`:
-```bash
-ls -la seed/data/
-```
-
-### Erro de conexão com banco de dados
-Aguarde o banco estar pronto. O health check deve retornar:
-```bash
-curl http://localhost:8000/health
-```
-
-### Resetar banco de dados
-```bash
-docker-compose down -v
-docker-compose up --build
-```
-
-## 📄 Licença
-
-Este projeto foi desenvolvido como parte de um desafio técnico para a vaga de Desenvolvedor Pleno no MeuAT.
 
 ---
 
-**Desenvolvido com ❤️ para o MeuAT**
+## 🧪 Guia de Testes
+
+O projeto utiliza `pytest` para garantir a qualidade do código.
+
+### 1. Smoke Tests (CI/CD)
+Testes rápidos de "fumaça" que validam se a API sobe e conecta ao banco. Essenciais para pipelines de CI (como GitHub Actions).
+
+### 2. Rodando Testes Localmente
+Para rodar os testes na sua máquina, **o banco PostGIS deve estar rodando** via Docker.
+
+1. Suba o banco:
+   ```bash
+   docker-compose up -d db
+   ```
+2. Rode os testes:
+   ```bash
+   pytest tests/
+   ```
+   *O sistema detecta automaticamente o ambiente local e ajusta a conexão.*
+
+---
+
+## 🏗️ Estrutura do Projeto
+
+```
+.
+├── app/
+│   ├── api/            # Controllers (Rotas da API)
+│   ├── core/           # Configurações e Database
+│   ├── models/         # Modelos SQLAlchemy (ORM)
+│   ├── schemas/        # Schemas Pydantic (Validação)
+│   └── services/       # Regras de Negócio e Queries Espaciais
+├── seed/               # Script de carga de dados (ETL)
+├── tests/              # Testes unitários e de integração
+├── docker-compose.yml  # Orquestração
+└── requirements.txt    # Dependências
+```
+
+---
+
+## 📝 Decisões Técnicas
+
+1.  **PostGIS & Índices GIST**:
+    Utilizamos as funções nativas `ST_Contains` e `ST_DWithin` do PostGIS combinadas com índices GIST (`Generalized Search Tree`) na coluna `geometry`. Isso garante buscas espaciais extremamente performáticas, escalando para milhões de registros.
+
+2.  **Convenção de Nomes**:
+    O dataset geoespacial técnico não possui um "Nome Fantasia" amigável. Para contornar isso, definimos o "Nome" da fazenda como a combinação de **Município** + **Código do Imóvel**. Os filtros de busca textual atuam sobre esses dois campos.
+
+3.  **Arquitetura em Camadas**:
+    Separação clara entre Rotas, Serviços e Dados para facilitar a manutenção e testes. O controller apenas recebe a requisição, o service executa a lógica e o repositório/model acessa o banco.
+
+---
+
+**Desenvolvido para o Processo Seletivo MeuAT** 🚀
