@@ -4,9 +4,9 @@ Testes para health check endpoint.
 import pytest
 from fastapi.testclient import TestClient
 
-pytestmark = [pytest.mark.smoke, pytest.mark.integration]
-
 from app.main import app
+
+pytestmark = [pytest.mark.smoke, pytest.mark.integration]
 
 client = TestClient(app)
 

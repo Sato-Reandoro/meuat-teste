@@ -4,9 +4,9 @@ Testes unitários para endpoints de fazendas (sem banco de dados real).
 import pytest
 from fastapi.testclient import TestClient
 
-pytestmark = pytest.mark.unit
-
 from app.main import app
+
+pytestmark = pytest.mark.unit
 
 client = TestClient(app)
 
