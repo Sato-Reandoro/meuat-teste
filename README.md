@@ -102,25 +102,49 @@ Descobre em qual fazenda um ponto específico está localizado.
 
 ---
 
-## 🧪 Guia de Testes
+## 🧪 Testes Automatizados
 
-O projeto utiliza `pytest` para garantir a qualidade do código.
+Os testes do projeto são organizados por tipo, utilizando **pytest markers**, permitindo separar testes rápidos de testes que dependem de infraestrutura geoespacial.
 
-### 1. Smoke Tests (CI/CD)
-Testes rápidos de "fumaça" que validam se a API sobe e conecta ao banco. Essenciais para pipelines de CI (como GitHub Actions).
+### Tipos de Teste
 
-### 2. Rodando Testes Localmente
-Para rodar os testes na sua máquina, **o banco PostGIS deve estar rodando** via Docker.
+- **Unit tests (`unit`)**  
+  Testes rápidos e determinísticos, **sem dependência de banco de dados ou PostGIS**.  
+  Validam schemas, contratos de API, códigos de erro (422/404) e endpoints básicos.  
+  👉 **Executados no CI (GitHub Actions)**.
 
-1. Suba o banco:
-   ```bash
-   docker-compose up -d db
-   ```
-2. Rode os testes:
-   ```bash
-   pytest tests/
-   ```
-   *O sistema detecta automaticamente o ambiente local e ajusta a conexão.*
+- **Smoke tests (`smoke`)**  
+  Testes que verificam o funcionamento básico dos endpoints principais em um ambiente real.  
+  Dependem de PostgreSQL + PostGIS **com dados geoespaciais carregados**.  
+  👉 **Executados localmente**.
+
+- **Integration tests (`integration`)**  
+  Testes de integração completa com consultas espaciais (`ST_Contains`, `ST_DWithin`).  
+  Exercitam o fluxo real com dados geoespaciais.  
+  👉 **Executados localmente**.
+
+---
+
+### Rodando Testes Localmente
+
+#### 1️⃣ Subir o banco de dados  
+*(Obrigatório apenas para smoke e integration tests)*
+
+```bash
+docker-compose up -d db
+
+# Executar apenas unit tests (não requer banco)
+pytest -m unit
+
+# Executar smoke tests (requer PostGIS + dados geoespaciais)
+pytest -m smoke
+
+# Executar testes de integração completos (PostGIS + dados geoespaciais)
+pytest -m integration
+
+# Executar todos os testes
+pytest
+```
 
 ---
 
