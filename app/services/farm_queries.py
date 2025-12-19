@@ -23,7 +23,7 @@ class FarmQueryService:
     def get_farm_by_id(self, farm_id: int) -> Optional[Farm]:
         """Busca fazenda por ID (ogc_fid)."""
         logger.info(f"Buscando fazenda ID: {farm_id}")
-        return self.db.query(Farm).filter(Farm.ogc_fid == farm_id).first()
+        return self.db.query(Farm).filter(Farm.cod_imovel == farm_id).first()
 
     def search_by_point(
         self,

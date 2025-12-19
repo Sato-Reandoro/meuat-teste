@@ -39,7 +39,7 @@ def _build_farm_response(farm, db: Session) -> FarmResponse:
 
 
 @router.get("/fazendas/{farm_id}", response_model=FarmResponse, tags=["Fazendas"])
-async def get_farm(farm_id: int, db: Session = Depends(get_db)):
+async def get_farm(farm_id: str, db: Session = Depends(get_db)):
     """
     Busca uma fazenda específica por ID.
 
