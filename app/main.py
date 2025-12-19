@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api import farms, health
 from app.core.config import get_settings
@@ -33,6 +36,38 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": str(exc.detail)},  # Garantees detail is string
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    for error in errors:
+        if "ctx" in error:
+            error["ctx"] = str(error["ctx"])
+            
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": "Erro de validação nos dados enviados.",
+            "errors": errors,
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Erro interno do servidor: {str(exc)}"},
+    )
 
 # Middleware CORS
 app.add_middleware(

@@ -56,7 +56,7 @@ async def get_farm(farm_id: str, db: Session = Depends(get_db)):
 
     if not farm:
         logger.warning(f"Farm {farm_id} not found")
-        raise HTTPException(status_code=404, detail="Farm not found")
+        raise HTTPException(status_code=404, detail="Fazenda não encontrada")
 
     return _build_farm_response(farm, db)
 
