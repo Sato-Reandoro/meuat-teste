@@ -69,6 +69,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": f"Erro interno do servidor: {str(exc)}"},
     )
 
+
 # Middleware CORS
 app.add_middleware(
     CORSMiddleware,
