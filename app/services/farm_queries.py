@@ -4,7 +4,7 @@ Serviço de consultas de fazendas com operações espaciais PostGIS.
 import json
 from typing import Optional
 
-from geoalchemy2.functions import ST_Contains
+from geoalchemy2.functions import ST_Covers
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -33,7 +33,7 @@ class FarmQueryService:
         page_size: int = 50,
     ) -> tuple[list[Farm], int]:
         """
-        Busca fazendas contendo o ponto (ST_Contains).
+        Busca fazendas contendo o ponto (ST_Covers).
         Retorna (lista_fazendas, total).
         """
         logger.info(f"Buscando fazendas contendo ponto: ({latitude}, {longitude})")
@@ -41,7 +41,7 @@ class FarmQueryService:
         # Ponto em WGS84 (SRID 4326). Ordem correta: (lon, lat)
         point = func.ST_SetSRID(func.ST_MakePoint(longitude, latitude), 4326)
 
-        query = self.db.query(Farm).filter(ST_Contains(Farm.geometry, point))
+        query = self.db.query(Farm).filter(ST_Covers(Farm.geometry, point))
 
         total = query.count()
 
