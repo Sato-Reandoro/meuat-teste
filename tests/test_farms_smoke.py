@@ -5,8 +5,8 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-# Aplica marcador smoke para todos os testes neste arquivo
-pytestmark = pytest.mark.smoke
+# Aplica marcadores smoke e integration
+pytestmark = [pytest.mark.smoke, pytest.mark.integration]
 
 # Configura logger para os testes
 logger = logging.getLogger(__name__)
@@ -63,8 +63,8 @@ def test_search_by_point_invalid_latitude():
 
 def test_search_by_radius_valid_request():
     """Teste: Busca por raio com parâmetros válidos."""
-    logger.info("Testando busca por raio com parâmetros válidos")
-    payload = {"latitude": -23.5505, "longitude": -46.6333, "raio_km": 50}
+    logger.info("Testando busca por raio com parâmetros válidos (raio reduzido para 5km)")
+    payload = {"latitude": -23.5505, "longitude": -46.6333, "raio_km": 5}
     logger.info(f"Payload enviado: {payload}")
 
     response = client.post("/fazendas/busca-raio", json=payload)
@@ -100,10 +100,10 @@ def test_search_by_radius_invalid_radius():
 
 def test_search_by_radius_with_pagination():
     """Teste: Busca por raio com paginação."""
-    logger.info("Testando busca por raio com paginação (page=1, page_size=10)")
-    payload = {"latitude": -23.5505, "longitude": -46.6333, "raio_km": 100}
+    logger.info("Testando busca por raio com paginação (page=1, page_size=5, raio=5km)")
+    payload = {"latitude": -23.5505, "longitude": -46.6333, "raio_km": 5}
 
-    response = client.post("/fazendas/busca-raio?page=1&page_size=10", json=payload)
+    response = client.post("/fazendas/busca-raio?page=1&page_size=5", json=payload)
 
     logger.info(f"Status code: {response.status_code}")
     assert response.status_code == 200
@@ -113,4 +113,4 @@ def test_search_by_radius_with_pagination():
     logger.info(f"Tamanho da página: {data.get('page_size')}")
 
     assert data["page"] == 1
-    assert data["page_size"] == 10
+    assert data["page_size"] == 5

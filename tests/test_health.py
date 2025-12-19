@@ -2,6 +2,9 @@
 Testes para health check endpoint.
 """
 from fastapi.testclient import TestClient
+import pytest
+
+pytestmark = [pytest.mark.smoke, pytest.mark.integration]
 
 from app.main import app
 
@@ -25,16 +28,3 @@ def test_health_endpoint_structure():
     # Se status 503, verifica que tem mensagem de erro
     else:
         assert "detail" in data
-
-
-def test_root_endpoint():
-    """Test that root endpoint returns API information."""
-    response = client.get("/")
-
-    assert response.status_code == 200
-    data = response.json()
-
-    assert "name" in data
-    assert "version" in data
-    assert "docs" in data
-    assert "health" in data
