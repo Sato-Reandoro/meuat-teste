@@ -4,7 +4,7 @@ Serviço de consultas de fazendas com operações espaciais PostGIS.
 import json
 from typing import Optional
 
-from geoalchemy2.functions import ST_Contains, ST_DWithin
+from geoalchemy2.functions import ST_Contains
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -26,7 +26,11 @@ class FarmQueryService:
         return self.db.query(Farm).filter(Farm.ogc_fid == farm_id).first()
 
     def search_by_point(
-        self, latitude: float, longitude: float, page: int = 1, page_size: int = 50
+        self,
+        latitude: float,
+        longitude: float,
+        page: int = 1,
+        page_size: int = 50,
     ) -> tuple[list[Farm], int]:
         """
         Busca fazendas contendo o ponto (ST_Contains).
@@ -34,15 +38,13 @@ class FarmQueryService:
         """
         logger.info(f"Buscando fazendas contendo ponto: ({latitude}, {longitude})")
 
-        # Cria geometria do ponto (WGS84 - SRID 4326)
+        # Ponto em WGS84 (SRID 4326). Ordem correta: (lon, lat)
         point = func.ST_SetSRID(func.ST_MakePoint(longitude, latitude), 4326)
 
-        # Query base com ST_Contains
         query = self.db.query(Farm).filter(ST_Contains(Farm.geometry, point))
 
         total = query.count()
 
-        # Paginação
         offset = (page - 1) * page_size
         farms = query.offset(offset).limit(page_size).all()
 
@@ -60,23 +62,23 @@ class FarmQueryService:
         min_area: Optional[float] = None,
         max_area: Optional[float] = None,
     ) -> tuple[list[Farm], int]:
-        """
-        Busca fazendas dentro do raio (ST_DWithin).
-        Retorna (lista_fazendas, total).
-        """
         logger.info(
             f"Buscando fazendas num raio de {radius_km}km do ponto: ({latitude}, {longitude})"
         )
 
-        # Cria geometria do ponto (WGS84)
+        # Ponto em WGS84 (SRID 4326)
         point = func.ST_SetSRID(func.ST_MakePoint(longitude, latitude), 4326)
 
-        # Converte km para metros
+        # Converte km para metros (ST_DWithin em geography usa metros)
         radius_m = radius_km * 1000
 
-        # ST_DWithin com use_spheroid=True para precisão em metros
+        # ST_DWithin usando geography para distância real (metros)
         query = self.db.query(Farm).filter(
-            ST_DWithin(func.ST_Transform(Farm.geometry, 4326), point, radius_m, True)
+            func.ST_DWithin(
+                func.Geography(Farm.geometry),
+                func.Geography(point),
+                radius_m,
+            )
         )
 
         # Filtros opcionais
@@ -94,7 +96,6 @@ class FarmQueryService:
 
         total = query.count()
 
-        # Paginação
         offset = (page - 1) * page_size
         farms = query.offset(offset).limit(page_size).all()
 
@@ -102,12 +103,10 @@ class FarmQueryService:
         return farms, total
 
     @staticmethod
-    def farm_to_geojson(farm: Farm, db: Session) -> dict:
+    def farm_to_geojson(farm: Farm, db: Session) -> dict | None:
         """Converte geometria da fazenda para GeoJSON."""
         if not farm.geometry:
             return None
 
-        # Converte geometria PostGIS para GeoJSON
         geojson_str = db.scalar(func.ST_AsGeoJSON(farm.geometry))
-
         return json.loads(geojson_str) if geojson_str else None
