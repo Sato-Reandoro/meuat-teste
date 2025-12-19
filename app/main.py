@@ -52,7 +52,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     for error in errors:
         if "ctx" in error:
             error["ctx"] = str(error["ctx"])
-            
+
     return JSONResponse(
         status_code=422,
         content={
